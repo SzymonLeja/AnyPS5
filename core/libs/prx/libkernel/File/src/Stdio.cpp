@@ -56,8 +56,8 @@ static std::optional<std::filesystem::path> NativeDescriptorPath(int descriptor)
     std::wstring path(MAX_PATH, L'\0');
     auto length = ::GetFinalPathNameByHandleW(handle, path.data(), static_cast<DWORD>(path.size()), FILE_NAME_NORMALIZED);
     if (length >= path.size()) {
-        path.resize(length);
-        length = ::GetFinalPathNameByHandleW(handle, path.data(), length, FILE_NAME_NORMALIZED);
+        path.resize(static_cast<std::size_t>(length) + 1);
+        length = ::GetFinalPathNameByHandleW(handle, path.data(), static_cast<DWORD>(path.size()), FILE_NAME_NORMALIZED);
     }
     if (length == 0 || length >= path.size()) {
         errno = EINVAL;

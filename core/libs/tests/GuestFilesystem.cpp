@@ -149,6 +149,19 @@ int main() {
     Require(futimes_nid_postfix(descriptor, negative) == -1 && *__error_nid_postfix() == 22);
     Require(std::fclose(native) == 0);
     Require(std::filesystem::file_size(sized) == 3);
+#ifdef _WIN32
+    auto longPath = root / "long-path";
+    while (longPath.native().size() <= 260) longPath /= "directory";
+    Require(std::filesystem::create_directories(longPath));
+    const auto longFile = longPath / "file.txt";
+    { std::ofstream stream(longFile); Require(static_cast<bool>(stream)); }
+    const int longDescriptor = open_nid_postfix(longFile.string().c_str(), 2, 0);
+    Require(longDescriptor >= 0);
+    Require(fchmod_nid_postfix(longDescriptor, 0600) == 0);
+    Require(futimes_nid_postfix(longDescriptor, nullptr) == 0);
+    Require(close_nid_postfix(longDescriptor) == 0);
+    Require(std::filesystem::remove(longFile));
+#endif
 #ifndef _WIN32
     Require(sceKernelFchmod(descriptor, 0600) == static_cast<int>(0x80020009u));
     Require(fchmod_nid_postfix(descriptor, 0600) == -1 && *__error_nid_postfix() == 9);
